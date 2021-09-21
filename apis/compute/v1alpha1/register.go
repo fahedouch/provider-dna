@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 The Crossplane Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,20 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha1 contains the core resources of the Template provider.
-// +kubebuilder:object:generate=true
-// +groupName=template.crossplane.io
-// +versionName=v1alpha1
 package v1alpha1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
 // Package type metadata.
 const (
-	Group   = "template.crossplane.io"
+	Group   = "compute.crossplane.carrefour.fr"
 	Version = "v1alpha1"
 )
 
@@ -38,3 +36,15 @@ var (
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 )
+
+// Firewall type metadata.
+var (
+	FirewallKind             = reflect.TypeOf(Firewall{}).Name()
+	FirewallGroupKind        = schema.GroupKind{Group: Group, Kind: FirewallKind}.String()
+	FirewallKindAPIVersion   = FirewallKind + "." + SchemeGroupVersion.String()
+	FirewallGroupVersionKind = SchemeGroupVersion.WithKind(FirewallKind)
+)
+
+func init() {
+	SchemeBuilder.Register(&Firewall{}, &FirewallList{})
+}

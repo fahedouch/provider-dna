@@ -4,28 +4,30 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.6.2
   creationTimestamp: null
-  name: providerconfigs.template.crossplane.io
+  name: firewalls.compute.crossplane.carrefour.fr
 spec:
-  group: template.crossplane.io
+  group: compute.crossplane.carrefour.fr
   names:
-    kind: ProviderConfig
-    listKind: ProviderConfigList
-    plural: providerconfigs
-    singular: providerconfig
-  scope: Cluster
+    categories:
+    - crossplane
+    - dna
+    kind: Firewall
+    listKind: FirewallList
+    plural: firewalls
+    singular: firewall
+  scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .metadata.creationTimestamp
-      name: AGE
-      type: date
-    - jsonPath: .spec.credentials.secretRef.name
-      name: SECRET-NAME
-      priority: 1
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
       type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: A ProviderConfig configures a Template provider.
+        description: A Firewall is a dna resource that represents a crossplane Firewall
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -40,66 +42,61 @@ spec:
           metadata:
             type: object
           spec:
-            description: A ProviderConfigSpec defines the desired state of a ProviderConfig.
+            description: A FirewallSpec defines the desired state of a Firewall.
             properties:
-              credentials:
-                description: Credentials required to authenticate to this provider.
+              deletionPolicy:
+                default: Delete
+                description: DeletionPolicy specifies what will happen to the underlying
+                  external when this managed resource is deleted - either "Delete"
+                  or "Orphan" the external resource.
+                enum:
+                - Orphan
+                - Delete
+                type: string
+              providerConfigRef:
+                default:
+                  name: default
+                description: ProviderConfigReference specifies how the provider that
+                  will be used to create, observe, update, and delete this managed
+                  resource should be configured.
                 properties:
-                  env:
-                    description: Env is a reference to an environment variable that
-                      contains credentials that must be used to connect to the provider.
-                    properties:
-                      name:
-                        description: Name is the name of an environment variable.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                  fs:
-                    description: Fs is a reference to a filesystem location that contains
-                      credentials that must be used to connect to the provider.
-                    properties:
-                      path:
-                        description: Path is a filesystem path.
-                        type: string
-                    required:
-                    - path
-                    type: object
-                  secretRef:
-                    description: A SecretRef is a reference to a secret key that contains
-                      the credentials that must be used to connect to the provider.
-                    properties:
-                      key:
-                        description: The key to select.
-                        type: string
-                      name:
-                        description: Name of the secret.
-                        type: string
-                      namespace:
-                        description: Namespace of the secret.
-                        type: string
-                    required:
-                    - key
-                    - name
-                    - namespace
-                    type: object
-                  source:
-                    description: Source of the provider credentials.
-                    enum:
-                    - None
-                    - Secret
-                    - InjectedIdentity
-                    - Environment
-                    - Filesystem
+                  name:
+                    description: Name of the referenced object.
                     type: string
                 required:
-                - source
+                - name
                 type: object
-            required:
-            - credentials
+              providerRef:
+                description: 'ProviderReference specifies the provider that will be
+                  used to create, observe, update, and delete this managed resource.
+                  Deprecated: Please use ProviderConfigReference, i.e. `providerConfigRef`'
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: WriteConnectionSecretToReference specifies the namespace
+                  and name of a Secret to which any connection details for this managed
+                  resource should be written. Connection details frequently include
+                  the endpoint, username, and password required to connect to the
+                  managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                  namespace:
+                    description: Namespace of the secret.
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
             type: object
           status:
-            description: A ProviderConfigStatus reflects the observed state of a ProviderConfig.
+            description: A FirewallStatus represents the observed state of a Firewall.
             properties:
               conditions:
                 description: Conditions of the resource.
@@ -134,10 +131,6 @@ spec:
                   - type
                   type: object
                 type: array
-              users:
-                description: Users of this provider configuration.
-                format: int64
-                type: integer
             type: object
         required:
         - spec

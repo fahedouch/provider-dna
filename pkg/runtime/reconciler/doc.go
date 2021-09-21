@@ -14,5 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package sample contains group Sample API versions
-package sample
+// Package reconciler provides reconcilers for DNA resources.
+// eventually this package can be outsourced to use it for another cloud provider like azure
+package reconciler
